@@ -7,37 +7,87 @@
 </head>
 <body>
     <h1>PAYMENT GATEWAY TEST DASHBOARD</h1>
-    <canvas id="chart" style="width:600px; height:400px;"></canvas>
+
+    <!-- Buttons will be dynamically generated here -->
+    <div id="buttons-container">
+        {% for sheet_name in sheet_data.keys() %}
+            <button onclick="showChart('{{ sheet_name }}')">{{ sheet_name }}</button>
+        {% endfor %}
+    </div>
+
+    <!-- Back Button -->
+    <div style="margin-top: 10px;">
+        <button onclick="goBack()">Back to First Page</button>
+    </div>
+
+    <div id="chart-container" style="width:600px; height:400px;">
+        <canvas id="chart" style="width:600px; height:400px;"></canvas>
+    </div>
 
     <script>
-        const labels = {{ labels | tojson }};
-        const datasets = {{ datasets | tojson }};
+        const sheetData = {{ sheet_data | tojson }};
+        let chartInstance = null;
 
-        new Chart(document.getElementById('chart'), {
-            type: 'scatter',
-            data: {
-                labels: labels,
-                datasets: datasets
-            },
-            options: {
-                indexAxis: 'y',
-                responsive: false,
-                scales: {
-                    x: {
-                        position: 'top',
-                        grid: {drawOnChartArea: false},
-                        beginAtZero: true,
-                        reverse: true,
-                        ticks: { stepSize: 1 }
-                    },
-                    y: {
-                        type: 'category'        
+        function showChart(sheetName) {
+            const container = document.getElementById('chart-container');
+
+            // Remove old canvas and create a new one
+            container.innerHTML = '<canvas id="chart"></canvas>';
+            const canvas = document.getElementById('chart');
+            const ctx = canvas.getContext('2d');
+
+            const data = sheetData[sheetName];
+
+            const config = {
+                type: 'scatter',
+                data: {
+                    labels: data.labels,
+                    datasets: data.datasets
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            position: 'top',
+                            grid: { drawOnChartArea: false },
+                            beginAtZero: true,
+                            reverse: true,
+                            ticks: { stepSize: 1 }
+                        },
+                        y: {
+                            type: 'category',
+                            autoSkip: false,
+                            maxRotation: 0,
+                            minRotation: 0
+                        }
                     }
                 }
+            };
+
+            // Destroy previous chart if exists
+            if (chartInstance) {
+                chartInstance.destroy();
+                chartInstance = null;
             }
-        });
+
+            chartInstance = new Chart(ctx, config);
+
+        }
+
+        function goBack() {
+            const canvas = document.getElementById('chart');
+            const ctx = canvas.getContext('2d');
+
+            if (chartInstance) {
+                chartInstance.destroy();
+                chartInstance = null;
+            }
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+        
     </script>
-
-
 </body>
 </html>
