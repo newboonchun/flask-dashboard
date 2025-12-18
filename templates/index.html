@@ -17,77 +17,165 @@
 
     <!-- Back Button -->
     <div style="margin-top: 10px;">
-        <button onclick="goBack()">Back to First Page</button>
+        <button onclick="goBack()">Clear All</button>
     </div>
 
-    <div id="chart-container" style="width:600px; height:400px;">
-        <canvas id="chart" style="width:600px; height:400px;"></canvas>
+    <!-- CHART CONTAIANER DOM -->
+    <div id="charts-wrapper" style="display:flex; gap:30px; margin-top:20px;">
+
+        <!-- LEFT CHART -->
+        <div id="chart-container-left" style="flex:1; height:600px;">
+            <canvas id="chart-left"></canvas>
+        </div>
+    
+        <!-- RIGHT CHART -->
+        <div id="chart-container-right" style="flex:1; height:600px;">
+            <canvas id="chart-right"></canvas>
+        </div>
+
     </div>
 
     <script>
         const sheetData = {{ sheet_data | tojson }};
-        let chartInstance = null;
+        const sheetOverallData = {{ sheet_overall_data | tojson }};
+        //let chartInstance = null;
+        let chartLeft = null;
+        let chartRight = null;
 
-        function showChart(sheetName) {
-            const container = document.getElementById('chart-container');
-
-            // Remove old canvas and create a new one
-            container.innerHTML = '<canvas id="chart"></canvas>';
-            const canvas = document.getElementById('chart');
-            const ctx = canvas.getContext('2d');
-
-            const data = sheetData[sheetName];
-
-            const config = {
-                type: 'scatter',
-                data: {
-                    labels: data.labels,
-                    datasets: data.datasets
-                },
-                options: {
-                    indexAxis: 'y',
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        x: {
-                            position: 'top',
-                            grid: { drawOnChartArea: false },
-                            beginAtZero: true,
-                            reverse: true,
-                            ticks: { stepSize: 1 }
+        function createScatterChart(ctx, data, titleText) {
+        return new Chart(ctx, {
+            type: 'scatter',
+            data: {
+                labels: data.labels,
+                datasets: data.datasets
+            },
+            options: {
+                //indexAxis: 'y',
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: titleText,
+                        font: {
+                            size: 18,
+                            weight: 'bold'
                         },
-                        y: {
-                            type: 'category',
+                        padding: {
+                            top: 10,
+                            bottom: 20
+                        }
+                    },
+                    legend: {
+                        position: 'top'
+                    }
+                },
+                layout: {
+                    padding: { left: 60 }
+                },
+                scales: {
+                    x: {
+                        position: 'top',
+                        grid: { drawOnChartArea: false },
+                        beginAtZero: true,
+                        reverse: true,
+                        ticks: { stepSize: 1 }
+                    },
+                    y: {
+                        type: 'category',
+                        ticks: {
                             autoSkip: false,
                             maxRotation: 0,
                             minRotation: 0
                         }
                     }
                 }
-            };
-
-            // Destroy previous chart if exists
-            if (chartInstance) {
-                chartInstance.destroy();
-                chartInstance = null;
             }
+        });
+        }
 
-            chartInstance = new Chart(ctx, config);
+        function createStackedChart(ctx, data, titleText) {
+        return new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: data.labels,
+                datasets: data.datasets
+            },
+            options: {
+                //indexAxis: 'y',
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: titleText,
+                        font: {
+                            size: 18,
+                            weight: 'bold'
+                        },
+                        padding: {
+                            top: 10,
+                            bottom: 20
+                        }
+                    },
+                    legend: {
+                        position: 'top'
+                    }
+                },
+                layout: {
+                    padding: { left: 60 }
+                },
+                scales: {
+                    x: {
+                        stacked: true,
+                        type: 'category',
+                        ticks: {
+                            autoSkip: false,
+                            maxRotation: 0,
+                            minRotation: 0
+                        }
+                    },
+                    y: {
+                        stacked: true,
+                        grid: { drawOnChartArea: false },
+                        beginAtZero: true,
+                        ticks: { stepSize: 1 }
+                    }
+                }
+            }
+        });
+        }
 
+        function showChart(sheetName) {
+            const data = sheetData[sheetName];
+            const overall_data = sheetOverallData[sheetName];
+
+            /** LEFT CHART **/
+            const leftContainer = document.getElementById('chart-container-left');
+            leftContainer.innerHTML = '<canvas id="chart-left"></canvas>';
+            const leftCtx = document.getElementById('chart-left').getContext('2d');
+
+            if (chartLeft) chartLeft.destroy();
+            chartLeft = createScatterChart(leftCtx, data, `Real-Time-Plot`);
+
+            /** RIGHT CHART (example: same data, can be different) **/
+            const rightContainer = document.getElementById('chart-container-right');
+            rightContainer.innerHTML = '<canvas id="chart-right"></canvas>';
+            const rightCtx = document.getElementById('chart-right').getContext('2d');
+
+            if (chartRight) chartRight.destroy();
+            chartRight = createStackedChart(rightCtx, overall_data, `Total Failed Count`);
         }
 
         function goBack() {
-            const canvas = document.getElementById('chart');
-            const ctx = canvas.getContext('2d');
+            if (chartLeft) chartLeft.destroy();
+            if (chartRight) chartRight.destroy();
+            chartLeft = chartRight = null;
 
-            if (chartInstance) {
-                chartInstance.destroy();
-                chartInstance = null;
-            }
-
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            document.getElementById('chart-container-left').innerHTML = '<canvas id="chart-left"></canvas>';
+            document.getElementById('chart-container-right').innerHTML = '<canvas id="chart-right"></canvas>';
         }
-        
+  
     </script>
 </body>
 </html>
