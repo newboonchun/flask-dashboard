@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>My Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <h1>PAYMENT GATEWAY TEST DASHBOARD</h1>
+
+    <!-- Buttons will be dynamically generated here -->
+    <div id="buttons-container">
+        {% for sheet_name in sheet_overall_data.keys() %}
+            <button onclick="showChart('{{ sheet_name }}')">{{ sheet_name }}</button>
+        {% endfor %}
+    </div>
+
+    <!-- Back Button -->
+    <div style="margin-top: 10px;">
+        <button onclick="goBack()">Clear All</button>
+    </div>
+
+    <!-- CHART CONTAIANER DOM -->
+    <div id="charts-wrapper" style="display:flex; gap:30px; margin-top:20px;">
+
+        <!-- LEFT CHART -->
+        <div id="chart-container-left" style="flex:1; height:600px; position:relative;">
+            <canvas id="chart-left"></canvas>
+            <div id="left-placeholder"
+                 style="display:none;
+                        position:absolute;
+                        top:50%;
+                        left:50%;
+                        transform:translate(-50%, -50%);
+                        color:#888;
+                        font-size:18px;">
+                No real-time data available
+            </div>
+        </div>
+    
+        <!-- RIGHT CHART -->
+        <div id="chart-container-right" style="flex:1; height:600px;">
+            <canvas id="chart-right"></canvas>
+        </div>
+
+    </div>
+
+    <script>
+        const sheetData = {{ sheet_data | tojson }};
+        const sheetOverallData = {{ sheet_overall_data | tojson }};
+        //let chartInstance = null;
+        let chartLeft = null;
+        let chartRight = null;
+
+        function createScatterChart(ctx, data, titleText) {
+        return new Chart(ctx, {
+            type: 'scatter',
+            data: {
+                labels: data.labels,
+                datasets: data.datasets
+            },
+            options: {
+                //indexAxis: 'y',
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: titleText,
+                        font: {
+                            size: 18,
+                            weight: 'bold'
+                        },
+                        padding: {
+                            top: 10,
+                            bottom: 20
+                        }
+                    },
+                    legend: {
+                        position: 'top'
+                    }
+                },
+                layout: {
+                    padding: { left: 60 }
+                },
+                scales: {
+                    x: {
+                        position: 'top',
+                        grid: { drawOnChartArea: false },
+                        beginAtZero: true,
+                        reverse: true,
+                        ticks: { stepSize: 1 }
+                    },
+                    y: {
+                        type: 'category',
+                        ticks: {
+                            autoSkip: false,
+                            maxRotation: 0,
+                            minRotation: 0
+                        }
+                    }
+                }
+            }
+        });
+        }
+
+        function createStackedChart(ctx, overall_data, titleText) {
+        return new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: overall_data.labels,
+                datasets: overall_data.datasets
+            },
+            options: {
+                //indexAxis: 'y',
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: titleText,
+                        font: {
+                            size: 18,
+                            weight: 'bold'
+                        },
+                        padding: {
+                            top: 10,
+                            bottom: 20
+                        }
+                    },
+                    legend: {
+                        position: 'top'
+                    }
+                },
+                layout: {
+                    padding: { left: 60 }
+                },
+                scales: {
+                    x: {
+                        stacked: true,
+                        type: 'category',
+                        ticks: {
+                            autoSkip: false,
+                            maxRotation: 0,
+                            minRotation: 0
+                        }
+                    },
+                    y: {
+                        stacked: true,
+                        grid: { drawOnChartArea: false },
+                        beginAtZero: true,
+                        ticks: { stepSize: 1 }
+                    }
+                }
+            }
+        });
+        }
+
+        function showChart(sheetName) {
+            const data = sheetData[sheetName];
+            const overall_data = sheetOverallData[sheetName];
+
+
+            /** -------- LEFT CHART -------- **/
+            const leftContainer = document.getElementById('chart-container-left');
+            const leftPlaceholder = document.getElementById('left-placeholder');
+                
+            leftContainer.innerHTML = `
+                <canvas id="chart-left"></canvas>
+                <div id="left-placeholder"
+                     style="display:none;
+                            position:absolute;
+                            top:50%;
+                            left:50%;
+                            transform:translate(-50%, -50%);
+                            color:#888;
+                            font-size:18px;">
+                    No real-time data available
+                </div>
+            `;
+            
+            if (chartLeft) {
+                chartLeft.destroy();
+                chartLeft = null;
+            }
+        
+            if (data) {
+                // show chart
+                const leftCtx = document.getElementById('chart-left').getContext('2d');
+                chartLeft = createScatterChart(leftCtx, data, 'Real-Time Plot');
+                document.getElementById('left-placeholder').style.display = 'none';
+            } else {
+                // show placeholder
+                document.getElementById('left-placeholder').style.display = 'block';
+            }
+        
+            /** RIGHT CHART (example: same data, can be different) **/
+            const rightContainer = document.getElementById('chart-container-right');
+            rightContainer.innerHTML = '<canvas id="chart-right"></canvas>';
+            const rightCtx = document.getElementById('chart-right').getContext('2d');
+
+            if (chartRight) chartRight.destroy();
+            chartRight = createStackedChart(rightCtx, overall_data, `Total Failed Count`);
+        }
+
+        function goBack() {
+            if (chartLeft) chartLeft.destroy();
+            if (chartRight) chartRight.destroy();
+            chartLeft = chartRight = null;
+
+            document.getElementById('chart-container-left').innerHTML = '<canvas id="chart-left"></canvas>';
+            document.getElementById('chart-container-right').innerHTML = '<canvas id="chart-right"></canvas>';
+        }
+  
+    </script>
+</body>
+</html>
