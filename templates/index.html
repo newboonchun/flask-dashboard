@@ -10,7 +10,7 @@
 
     <!-- Buttons will be dynamically generated here -->
     <div id="buttons-container">
-        {% for sheet_name in sheet_data.keys() %}
+        {% for sheet_name in sheet_overall_data.keys() %}
             <button onclick="showChart('{{ sheet_name }}')">{{ sheet_name }}</button>
         {% endfor %}
     </div>
@@ -24,8 +24,18 @@
     <div id="charts-wrapper" style="display:flex; gap:30px; margin-top:20px;">
 
         <!-- LEFT CHART -->
-        <div id="chart-container-left" style="flex:1; height:600px;">
+        <div id="chart-container-left" style="flex:1; height:600px; position:relative;">
             <canvas id="chart-left"></canvas>
+            <div id="left-placeholder"
+                 style="display:none;
+                        position:absolute;
+                        top:50%;
+                        left:50%;
+                        transform:translate(-50%, -50%);
+                        color:#888;
+                        font-size:18px;">
+                No real-time data available
+            </div>
         </div>
     
         <!-- RIGHT CHART -->
@@ -94,12 +104,12 @@
         });
         }
 
-        function createStackedChart(ctx, data, titleText) {
+        function createStackedChart(ctx, overall_data, titleText) {
         return new Chart(ctx, {
             type: 'bar',
             data: {
-                labels: data.labels,
-                datasets: data.datasets
+                labels: overall_data.labels,
+                datasets: overall_data.datasets
             },
             options: {
                 //indexAxis: 'y',
@@ -150,14 +160,40 @@
             const data = sheetData[sheetName];
             const overall_data = sheetOverallData[sheetName];
 
-            /** LEFT CHART **/
+
+            /** -------- LEFT CHART -------- **/
             const leftContainer = document.getElementById('chart-container-left');
-            leftContainer.innerHTML = '<canvas id="chart-left"></canvas>';
-            const leftCtx = document.getElementById('chart-left').getContext('2d');
-
-            if (chartLeft) chartLeft.destroy();
-            chartLeft = createScatterChart(leftCtx, data, `Real-Time-Plot`);
-
+            const leftPlaceholder = document.getElementById('left-placeholder');
+                
+            leftContainer.innerHTML = `
+                <canvas id="chart-left"></canvas>
+                <div id="left-placeholder"
+                     style="display:none;
+                            position:absolute;
+                            top:50%;
+                            left:50%;
+                            transform:translate(-50%, -50%);
+                            color:#888;
+                            font-size:18px;">
+                    No real-time data available
+                </div>
+            `;
+            
+            if (chartLeft) {
+                chartLeft.destroy();
+                chartLeft = null;
+            }
+        
+            if (data) {
+                // show chart
+                const leftCtx = document.getElementById('chart-left').getContext('2d');
+                chartLeft = createScatterChart(leftCtx, data, 'Real-Time Plot');
+                document.getElementById('left-placeholder').style.display = 'none';
+            } else {
+                // show placeholder
+                document.getElementById('left-placeholder').style.display = 'block';
+            }
+        
             /** RIGHT CHART (example: same data, can be different) **/
             const rightContainer = document.getElementById('chart-container-right');
             rightContainer.innerHTML = '<canvas id="chart-right"></canvas>';

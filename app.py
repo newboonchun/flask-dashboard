@@ -98,7 +98,7 @@ def index():
             #print(datasets)
         #break
         sheet_data[sheet] = {"labels": labels, "datasets": datasets}
-        print("Sheet data:%s"%sheet_data)
+        #print("Sheet data:%s"%sheet_data)
     
     # for overall plot
     file = rf"C:\Users\User\data_bot_daily_total.xlsx"
@@ -107,7 +107,7 @@ def index():
 
     #print("sheet_name:%s"%sheets)
     for sheet in sheets:
-        #print("sheet_name:%s"%sheet)
+        print("sheet_name:%s"%sheet)
         #if sheet != 'J8T':
         #    continue
         df = pd.read_excel(file,sheet_name=sheet)
@@ -166,9 +166,9 @@ def index():
             for j, col in enumerate(df.columns):
                 if col == "date":
                     continue
-                print("j:%s,col:%s"%(j,col))
+                #print("j:%s,col:%s"%(j,col))
                 for idx, val in df[col].items():
-                    print("idx:%s, val:%s"%(idx,val))
+                    #print("idx:%s, val:%s"%(idx,val))
                     if df.at[idx, "date"] in date:
                         points.append({
                                         "x": col,
@@ -187,7 +187,7 @@ def index():
                 "pointRadius": 5
             })
         sheet_overall_data[sheet] = {"labels": labels, "datasets": datasets}
-        #print("overall_sheets_data:%s"%sheet_overall_data)
+    #print("overall_sheets_data:%s"%sheet_overall_data)
 
     return render_template(
                             'index.html',
