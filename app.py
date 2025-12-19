@@ -14,12 +14,12 @@ def date_time(country):
 @app.route("/")
 def index():
 
-    #dt = date_time("Asia/Bangkok")
-    dt = '2025-12-17 02:17:31'
+    dt = date_time("Asia/Bangkok")
+    #dt = '2025-12-17 02:17:31'
     date = dt.split(" ")[0]
 
     # for real time plot
-    file = rf"C:\Users\User\Desktop\bot-payment-gateway-deposit-method-status-check\data_bot_{date}.xlsx"
+    file = rf"C:\Users\User\Desktop\bot-payment-gateway-deposit-method-status-check-six-site\data_bot_{date}.xlsx"
     sheets = pd.ExcelFile(file).sheet_names
     sheet_data = {}
 
@@ -107,7 +107,7 @@ def index():
 
     #print("sheet_name:%s"%sheets)
     for sheet in sheets:
-        print("sheet_name:%s"%sheet)
+        #print("sheet_name:%s"%sheet)
         #if sheet != 'J8T':
         #    continue
         df = pd.read_excel(file,sheet_name=sheet)
@@ -197,5 +197,5 @@ def index():
                             
 
 if __name__ == "__main__":
-    app.run(debug = True)
+    app.run()
 
