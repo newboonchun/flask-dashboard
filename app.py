@@ -19,7 +19,8 @@ def index():
     date = dt.split(" ")[0]
 
     # for real time plot
-    file = rf"C:\Users\User\Desktop\bot-payment-gateway-deposit-method-status-check-six-site\data_bot_{date}.xlsx"
+    #file = rf"C:\Users\User\Desktop\bot-payment-gateway-deposit-method-status-check-six-site\data_bot_{date}.xlsx"
+    file = rf"C:\Users\User\debug_data_bot_{date}.xlsx"  #debug
     sheets = pd.ExcelFile(file).sheet_names
     sheet_data = {}
 
@@ -32,6 +33,7 @@ def index():
 
         df["date_time"] = pd.to_datetime(df["date_time"]).astype(str)
         labels = df["date_time"].tolist()
+        columns = [col for col in df.columns if col != "date_time"]
         datasets = []
         colors = [
             "rgb(31, 119, 180)",   # blue
@@ -82,22 +84,31 @@ def index():
                 #print("idx:%s, val:%s"%(idx,val))
                 if val == 1:
                     points.append({
-                                    "x": i,
-                                    "y": df.at[idx, "date_time"]
+                                    "x": col,
+                                    "y": df.at[idx, "date_time"],
+                                    "backgroundColor": "rgb(214, 39, 40)", 
+                                    "borderColor": "rgb(214, 39, 40)"
+                                })
+                elif val == 0:
+                    points.append({
+                                    "x": col,
+                                    "y": df.at[idx, "date_time"],
+                                    "backgroundColor": "rgb(44, 160, 44)", 
+                                    "borderColor": "rgb(44, 160, 44)"
                                 })
                 #print("points:%s"%points)
             datasets.append({
             "label": col,
             "data": points,
-            "backgroundColor": colors[i % len(colors)],
-            "borderColor": colors[i % len(colors)],
             "tension": 0.3,
             "fill": True,
-            "pointRadius": 5
+            "pointRadius": 7,
+            "pointBackgroundColor": [p["backgroundColor"] for p in points], 
+            "pointBorderColor": [p["borderColor"] for p in points]
             })
             #print(datasets)
         #break
-        sheet_data[sheet] = {"labels": labels, "datasets": datasets}
+        sheet_data[sheet] = {"labels": labels, "columns": columns, "datasets": datasets}
         #print("Sheet data:%s"%sheet_data)
     
     # for overall plot
@@ -194,5 +205,8 @@ def index():
                             sheet_data=sheet_data,
                             sheet_overall_data=sheet_overall_data
                         )
-                            
+
+# for debug   
+if __name__ == "__main__":
+    app.run(debug = True)                      
 
