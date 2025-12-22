@@ -221,7 +221,7 @@
             if (data) {
                 // show chart
                 const leftCtx = document.getElementById('chart-left').getContext('2d');
-                chartLeft = createScatterChart(leftCtx, data, 'Real-Time Plot');
+                chartLeft = createScatterChart(leftCtx, data, `${sheetName} - Real-Time Plot`);
                 document.getElementById('left-placeholder').style.display = 'none';
             } else {
                 // show placeholder
@@ -234,7 +234,7 @@
             const rightCtx = document.getElementById('chart-right').getContext('2d');
 
             if (chartRight) chartRight.destroy();
-            chartRight = createStackedChart(rightCtx, overall_data, `Total Failed Count`);
+            chartRight = createStackedChart(rightCtx, overall_data, `${sheetName} - Total Failed Count`);
         }
 
         function goBack() {
