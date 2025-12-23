@@ -4,20 +4,33 @@
     <meta charset="UTF-8">
     <title>My Dashboard</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .hidden {
+            display: none !important;
+        }
+        .three-quarter {
+        flex: 0 0 75%;
+        max-width: 75%;
+        }
+    </style>
 </head>
 <body>
     <h1>PAYMENT GATEWAY TEST DASHBOARD</h1>
 
-    <!-- Buttons will be dynamically generated here -->
+    <!-- SHEET BUTTONS -->
     <div id="buttons-container">
         {% for sheet_name in sheet_overall_data.keys() %}
-            <button onclick="showChart('{{ sheet_name }}')">{{ sheet_name }}</button>
+            <button onclick="selectSheet('{{ sheet_name }}')">
+                {{ sheet_name }}
+            </button>
         {% endfor %}
     </div>
 
-    <!-- Back Button -->
-    <div style="margin-top: 10px;">
-        <button onclick="goBack()">Clear All</button>
+    <!-- ACTION BUTTONS (hidden initially) -->
+    <div id="actions-container" style="display:none; margin-top:15px;">
+        <button onclick="showRealtime()">Real-Time Plot</button>
+        <button onclick="showTotal()">Total Count Plot</button>
+        <button onclick="clearAll()">Back To First Page</button>
     </div>
 
     <!-- CHART CONTAIANER DOM -->
@@ -51,6 +64,15 @@
         //let chartInstance = null;
         let chartLeft = null;
         let chartRight = null;
+        let selectedSheet = null;
+
+        function selectSheet(sheetName) {
+            selectedSheet = sheetName;
+            // Hide sheet buttons
+            document.getElementById('buttons-container').style.display = 'none';
+            // Show action buttons
+            document.getElementById('actions-container').style.display = 'block';
+        }
 
         function createScatterChart(ctx, data, titleText) {
         return new Chart(ctx, {
@@ -190,16 +212,31 @@
         });
         }
 
-        function showChart(sheetName) {
-            const data = sheetData[sheetName];
-            const overall_data = sheetOverallData[sheetName];
+        function showRealtime() {
+            if (!selectedSheet) return;
+        
+            // 🔥 Destroy both charts every time
+            if (chartLeft) {
+                chartLeft.destroy();
+                chartLeft = null;
+            }
+            if (chartRight) {
+                chartRight.destroy();
+                chartRight = null;
+            }
+        
+            // Layout: show LEFT full screen, hide RIGHT
+            const left = document.getElementById('chart-container-left');
+            const right = document.getElementById('chart-container-right');
+        
+            left.classList.remove('hidden');
+            left.classList.add('three-quarter');
 
-
-            /** -------- LEFT CHART -------- **/
-            const leftContainer = document.getElementById('chart-container-left');
-            const leftPlaceholder = document.getElementById('left-placeholder');
-
-            leftContainer.innerHTML = `
+            right.classList.add('hidden');
+            right.classList.remove('three-quarter');
+        
+            // Rebuild canvas
+            left.innerHTML = `
                 <canvas id="chart-left"></canvas>
                 <div id="left-placeholder"
                      style="display:none;
@@ -213,37 +250,73 @@
                 </div>
             `;
             
+            const data = sheetData[selectedSheet];
+            if (data) {
+                const ctx = document.getElementById('chart-left').getContext('2d');
+                chartLeft = createScatterChart(
+                    ctx,
+                    data,
+                    `${selectedSheet} - Real-Time Plot`
+                );
+            } else {
+                document.getElementById('left-placeholder').style.display = 'block';
+            }
+        }
+
+        function showTotal() {
+            if (!selectedSheet) return;
+
+            // 🔥 Destroy both charts every time
             if (chartLeft) {
                 chartLeft.destroy();
                 chartLeft = null;
             }
-        
-            if (data) {
-                // show chart
-                const leftCtx = document.getElementById('chart-left').getContext('2d');
-                chartLeft = createScatterChart(leftCtx, data, `${sheetName} - Real-Time Plot`);
-                document.getElementById('left-placeholder').style.display = 'none';
-            } else {
-                // show placeholder
-                document.getElementById('left-placeholder').style.display = 'block';
+            if (chartRight) {
+                chartRight.destroy();
+                chartRight = null;
             }
         
-            /** RIGHT CHART (example: same data, can be different) **/
-            const rightContainer = document.getElementById('chart-container-right');
-            rightContainer.innerHTML = '<canvas id="chart-right"></canvas>';
-            const rightCtx = document.getElementById('chart-right').getContext('2d');
+            // Layout: show RIGHT full screen, hide LEFT
+            const left = document.getElementById('chart-container-left');
+            const right = document.getElementById('chart-container-right');
+        
+            right.classList.remove('hidden');
+            right.classList.add('three-quarter');
 
-            if (chartRight) chartRight.destroy();
-            chartRight = createStackedChart(rightCtx, overall_data, `${sheetName} - Total Failed Count`);
+            left.classList.add('hidden');
+            left.classList.remove('three-quarter');
+        
+            // Rebuild canvas
+            right.innerHTML = '<canvas id="chart-right"></canvas>';
+        
+            const overall_data = sheetOverallData[selectedSheet];
+            const ctx = document.getElementById('chart-right').getContext('2d');
+        
+            chartRight = createStackedChart(
+                ctx,
+                overall_data,
+                `${selectedSheet} - Total Failed Count`
+            );
         }
 
-        function goBack() {
+        function clearAll() {
             if (chartLeft) chartLeft.destroy();
             if (chartRight) chartRight.destroy();
+        
             chartLeft = chartRight = null;
-
-            document.getElementById('chart-container-left').innerHTML = '<canvas id="chart-left"></canvas>';
-            document.getElementById('chart-container-right').innerHTML = '<canvas id="chart-right"></canvas>';
+            selectedSheet = null;
+        
+            const left = document.getElementById('chart-container-left');
+            const right = document.getElementById('chart-container-right');
+        
+            left.classList.remove('hidden', 'three-quarter');
+            right.classList.remove('hidden', 'three-quarter');
+        
+            left.innerHTML = '<canvas id="chart-left"></canvas>';
+            right.innerHTML = '<canvas id="chart-right"></canvas>';
+        
+            document.getElementById('buttons-container').style.display = 'block';
+            document.getElementById('actions-container').style.display = 'none';
         }
   
     </script>
