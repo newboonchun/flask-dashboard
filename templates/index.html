@@ -28,9 +28,8 @@
 
     <!-- ACTION BUTTONS (hidden initially) -->
     <div id="actions-container" style="display:none; margin-top:15px;">
-        <button onclick="showRealtime()">Real-Time Plot</button>
         <button onclick="showTotal()">Total Count Plot</button>
-        <button onclick="clearAll()">Back To First Page</button>
+        <button onclick="clearAll()">Clear All</button>
     </div>
 
     <!-- CHART CONTAIANER DOM -->
@@ -68,10 +67,9 @@
 
         function selectSheet(sheetName) {
             selectedSheet = sheetName;
-            // Hide sheet buttons
-            document.getElementById('buttons-container').style.display = 'none';
             // Show action buttons
             document.getElementById('actions-container').style.display = 'block';
+            showRealtime();
         }
 
         function createScatterChart(ctx, data, titleText) {
@@ -315,7 +313,6 @@
             left.innerHTML = '<canvas id="chart-left"></canvas>';
             right.innerHTML = '<canvas id="chart-right"></canvas>';
         
-            document.getElementById('buttons-container').style.display = 'block';
             document.getElementById('actions-container').style.display = 'none';
         }
   
