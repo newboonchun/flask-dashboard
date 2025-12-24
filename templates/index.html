@@ -28,6 +28,7 @@
 
     <!-- ACTION BUTTONS (hidden initially) -->
     <div id="actions-container" style="display:none; margin-top:15px;">
+        <button onclick="showRealtime()">Real-Time Plot</button>
         <button onclick="showTotal()">Total Count Plot</button>
         <button onclick="clearAll()">Clear All</button>
     </div>
@@ -69,7 +70,6 @@
             selectedSheet = sheetName;
             // Show action buttons
             document.getElementById('actions-container').style.display = 'block';
-            showRealtime();
         }
 
         function createScatterChart(ctx, data, titleText) {
