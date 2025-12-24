@@ -68,6 +68,38 @@
 
         function selectSheet(sheetName) {
             selectedSheet = sheetName;
+
+                // 🔥 Clear existing charts
+            if (chartLeft) {
+                chartLeft.destroy();
+                chartLeft = null;
+            }
+            if (chartRight) {
+                chartRight.destroy();
+                chartRight = null;
+            }
+        
+            // Reset chart containers
+            const left = document.getElementById('chart-container-left');
+            const right = document.getElementById('chart-container-right');
+        
+            left.classList.remove('hidden', 'three-quarter');
+            right.classList.remove('hidden', 'three-quarter');
+        
+            left.innerHTML = `
+                <canvas id="chart-left"></canvas>
+                <div id="left-placeholder"
+                     style="display:none;
+                            position:absolute;
+                            top:50%;
+                            left:50%;
+                            transform:translate(-50%, -50%);
+                            color:#888;
+                            font-size:18px;">
+                    No real-time data available
+                </div>
+            `;
+            right.innerHTML = '<canvas id="chart-right"></canvas>';
             // Show action buttons
             document.getElementById('actions-container').style.display = 'block';
         }
