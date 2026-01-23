@@ -19,7 +19,7 @@ def index():
     date = dt.split(" ")[0]
 
     # for real time plot
-    file = rf"C:\Users\User\Desktop\bot-payment-gateway-deposit-method-status-check-six-site\data_bot_{date}.xlsx"
+    file = rf"C:\Users\User\Bot_Testing_PG_Data_Folder\data_bot_{date}.xlsx"
     #file = rf"C:\Users\User\debug_data_bot_{date}.xlsx"  #debug
     sheets = pd.ExcelFile(file).sheet_names
     sheet_data = {}
